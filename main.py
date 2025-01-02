@@ -1,5 +1,7 @@
 from PyPDF2 import PdfReader
 from flask import *
+from langchain_google_genai import ChatGoogleGenerativeAI
+import os
 
 
 reader = PdfReader('politica_viagens.pdf')
@@ -8,16 +10,31 @@ text = ''
 for i in range(len(reader.pages)):
     page = reader.pages[i].extract_text()
     text += page
+api_key = 'AIzaSyDk30zoRZAaRJsJFTMXQk8OMjs4EsP4A5k'
 
-app = Flask(__name__)
+
+os.environ['GOOGLE_API_KEY'] = api_key
+
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-pro",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,
+)
 
 json_salvo = {}
 
-@app.route('/', methods=['GET'])
-def testeget():
-    data_set = {'teste':'funcionou'}
-    json_dump = json.dumps(data_set)
-    return json_dump
+
+app = Flask(__name__)
+
+modelo = {
+"accepted": False,
+"violated_policies": [
+"Maximum trip duration exceeded (15 days)",
+"Maximum ticket price exceeded (R$ 1.000,00)"
+]
+}
 
 
 @app.route('/processo', methods=['POST'])
@@ -28,10 +45,7 @@ def obter_json():
     #até o momento o json é salvo, mas não tem mensagem confirmando
     global json_salvo
     json_salvo = data
-    print(json_salvo)
-    return 'recebemos o seu json'
+    ai_msg = llm.invoke(f'leia esse texto:{text} e usando ela como base, me mande um json confirmando se essa requisição:{json_salvo} será aceita, use esse exemplo como modelo:{modelo}')
+    return ai_msg.content
 if __name__=='__main__':
     app.run(port=7777)
-
-
-
