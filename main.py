@@ -61,4 +61,4 @@ def obter_json():
 
     return ai_msg.content
 if __name__=='__main__':
-    app.run(port=7777)
+    app.run(debug=True)
