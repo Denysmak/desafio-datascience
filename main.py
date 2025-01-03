@@ -38,7 +38,10 @@ modelo = {
 }
 
 
-@app.route('/processo', methods=['POST'])
+
+import json
+
+@app.route('/', methods=['POST'])
 def obter_json():
     data = request.get_json()
     if not data:
@@ -53,12 +56,11 @@ def obter_json():
     Com base nesse texto, avalie se a seguinte requisição será aceita:
     {json_salvo}
 
-    Retorne um JSON no seguinte formato:
+    Retorne um json no seguinte formato:
     {modelo}
-
-  """
-)
-
-    return ai_msg.content
+  """).content.replace('json', '')
+    formatted_string = json.dumps(ai_msg).strip()
+    response_json = json.loads(formatted_string)
+    return response_json
 if __name__=='__main__':
-    app.run(debug=True)
+    app.run(port=7777)
