@@ -4,20 +4,19 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 from dotenv import load_dotenv
 
-
+#Leitura do pdf, extração do conteúdo e transformação desse conteúdo em string
 reader = PdfReader('politica_viagens.pdf')
-#Variável com o conteúdo do pdf em uma string
 text = ''
 for i in range(len(reader.pages)):
     page = reader.pages[i].extract_text()
     text += page
-
+    
 load_dotenv()
 api_key = os.getenv("API_KEY")
 os.environ['GOOGLE_API_KEY'] = api_key
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro",
+    model="gemini-1.5-pr",
     temperature=0,
     max_tokens=None,
     timeout=None,
@@ -48,19 +47,28 @@ def obter_json():
         return {'error':'JSON inválido'}
     global json_salvo
     json_salvo = data
+
+
     ai_msg = llm.invoke(
     f"""
     Leia o seguinte texto de referência:
     {text}
 
     Com base nesse texto, avalie se a seguinte requisição será aceita:
-    {json_salvo}
+        {json_salvo}
 
-    Retorne um json no seguinte formato:
-    {modelo}
-  """).content.replace('json', '')
+        Retorne um json no seguinte formato:
+        {modelo}
+    """).content.replace('json', '')
+ 
     formatted_string = json.dumps(ai_msg).strip()
     response_json = json.loads(formatted_string)
     return response_json
+
+    
+    
+
+ 
 if __name__=='__main__':
+    
     app.run(port=7777)
